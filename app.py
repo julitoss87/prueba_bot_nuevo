@@ -5,17 +5,14 @@ import os
 
 app = Flask(__name__)
 
-# Recuperar API Token de Replicate
 REPLICATE_API_TOKEN = os.environ.get("REPLICATE_API_TOKEN")
 
-# Generador de respuesta usando Mistral 7B
 def responder_usuario(mensaje_usuario):
     if not REPLICATE_API_TOKEN:
-        return "Error: No se encontró el token de Replicate."
-
-    os.environ["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
+        return "Error: No se encontró el token de Replicate. Asegúrate de configurarlo en Render."
 
     try:
+        os.environ["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
         output = replicate.run(
             "mistralai/mistral-7b-instruct-v0.1:latest",
             input={
@@ -27,9 +24,8 @@ def responder_usuario(mensaje_usuario):
         )
         return "".join(output)
     except Exception as e:
-        return f"Ocurrió un error: {str(e)}"
+        return f"Ocurrió un error en el modelo: {str(e)}"
 
-# Webhook para Twilio
 @app.route("/webhook", methods=["POST"])
 def webhook():
     incoming_msg = request.values.get("Body", "").strip()
@@ -38,7 +34,6 @@ def webhook():
     twilio_resp.message(respuesta)
     return str(twilio_resp)
 
-# Ruta base opcional
 @app.route("/", methods=["GET"])
 def home():
-    return "Servidor activo: chatbot IA (Mistral vía Replicate)."
+    return "Servidor activo: chatbot IA (Mistral vía Replicate)"
