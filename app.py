@@ -15,7 +15,7 @@ def webhook():
 
     # Respuesta fija o condicional simple
     if "hola" in incoming_msg:
-        respuesta = "Hola, ¿en qué puedo ayudarte hoy?"
+        respuesta = "Hola, ¿en qué puedo ayudarte hoy?, ESTA ES UNA PRUEBA DEL EQUIPO IA BETEL - GUADALUPE MEDICAL CENTER"
     elif "precio" in incoming_msg:
         respuesta = "Nuestros precios varían según el procedimiento. ¿Qué tipo de cirugía te interesa?"
     else:
