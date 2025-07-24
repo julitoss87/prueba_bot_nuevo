@@ -14,7 +14,7 @@ def responder_usuario(mensaje_usuario):
     try:
         os.environ["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
         output = replicate.run(
-            "mistralai/mistral-7b-instruct-v0.1:latest",
+            "mistralai/mistral-7b-instruct-v0.1:01fd75c8f635929c4c401d70b4d79c565c8ed51c594cbdf7bfa91d3b7d37e29f",
             input={
                 "prompt": f"Usuario: {mensaje_usuario}\nAsistente:",
                 "temperature": 0.7,
