@@ -31,7 +31,7 @@ def webhook():
 
         # Llamada al modelo de Replicate
         model = replicate.models.get("mistralai/mistral-7b-instruct-v0.1")
-        version = model.versions.get("01fd75c8f635929c4c401d70b4d79c565c8ed51c594cbdf7bfa91d3b7d37e29f")
+        version = model.versions.list()[0]  # usa la versión más reciente
 
         output = version.predict(
             prompt=f"{system_prompt}\n\nUsuario: {incoming_msg}\nAsistente:",
