@@ -32,7 +32,7 @@ def webhook():
         # Llamada al modelo de Replicate
         version = replicate.models.get("mistralai/mistral-7b-instruct-v0.1").versions.get(
             "ac4f5ee056c041d6a3ea91b88c6b2d87a8a276363e0b9dfc2098b6b9c8c1f3c3"
-)
+        )
 
         output = version.predict(
             prompt=f"{system_prompt}\n\nUsuario: {incoming_msg}\nAsistente:",
