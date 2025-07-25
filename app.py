@@ -5,7 +5,6 @@ import replicate
 
 app = Flask(__name__)
 
-# Requiere que hayas definido tu token como variable de entorno en Render
 REPLICATE_API_TOKEN = os.getenv("REPLICATE_API_TOKEN")
 if not REPLICATE_API_TOKEN:
     raise ValueError("Error: No se encontró el token de Replicate")
@@ -14,22 +13,17 @@ os.environ["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    # Captura el mensaje entrante
     incoming_msg = request.values.get('Body', '').strip()
-    
-    # Crea una respuesta de Twilio
     resp = MessagingResponse()
     msg = resp.message()
 
     try:
-        # Mensaje inicial del sistema para orientar el estilo del chatbot
         system_prompt = (
             "Eres un asistente profesional que responde en español, especializado en brindar información clara, útil y persuasiva "
             "para personas interesadas en servicios de salud, medicina estética o cirugía plástica. Sé breve, cálido, y directo. "
             "No inventes datos médicos. Si el mensaje no es claro, haz una pregunta breve para continuar la conversación."
         )
 
-        # Llamada al modelo de Replicate
         version = replicate.models.get("mistralai/mistral-7b-instruct-v0.1").versions.get(
             "ac4f5ee056c041d6a3ea91b88c6b2d87a8a276363e0b9dfc2098b6b9c8c1f3c3"
         )
@@ -41,11 +35,7 @@ def webhook():
             top_p=0.9
         )
 
-        # Si el output es string
-        
-
-        # Combina la respuesta generada (es un generador)
-        respuesta = "".join(output)
+        respuesta = "".join(output) if isinstance(output, list) else str(output)
         msg.body(respuesta)
 
     except Exception as e:
