@@ -31,7 +31,7 @@ def webhook():
 
         # Llamada al modelo de Replicate
         output = replicate.run(
-            "mistralai/mistral-7b-instruct-v0.1:01fd75c8f635929c4c401d70b4d79c565c8ed51c594cbdf7bfa91d3b7d37e29f",
+            "mistralai/mistral-7b-instruct-v0.1",
             input={
                 "prompt": f"{system_prompt}\n\nUsuario: {incoming_msg}\nAsistente:",
                 "temperature": 0.7,
