@@ -12,38 +12,35 @@ client = OpenAI(
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    incoming_msg = request.values.get('Body', '')
-    print(f"[INFO] Mensaje recibido: {incoming_msg}")
+    incoming = request.values.get('Body', '').strip()
+    print(f"[INFO] Mensaje recibido: {incoming}")
 
     resp = MessagingResponse()
     msg = resp.message()
 
     try:
         completion = client.chat.completions.create(
-            model="nousresearch/nous-hermes-2-mistral:free",  # ✅ modelo válido
+            model="openrouter/auto:free",
             messages=[
-                {"role": "system", "content": "Eres un asistente útil y claro."},
-                {"role": "user", "content": incoming_msg}
+                {"role": "system", "content": "Eres un asistente en español, amable y persuasivo para ventas."},
+                {"role": "user", "content": incoming}
             ],
             extra_headers={
                 "HTTP-Referer": "https://bot-whatsapp-gpt-nz35.onrender.com",
-                "X-Title": "BotWhatsAppIA"
+                "X-Title": "BotVentasIA"
+            },
+            extra_body={
+                "models": ["openchat/openchat-3.5-0106:free", "gryphe/mythomax-l2-13b:free"]
             }
         )
 
-        if completion.choices:
-            content = completion.choices[0].message.content
-            print(f"[INFO] Respuesta cruda: {content}")
-            if content:
-                msg.body(content.strip())
-            else:
-                msg.body("No se generó respuesta. Intenta de nuevo.")
-        else:
-            print("[WARN] El modelo no devolvió ninguna elección.")
-            msg.body("No se recibió respuesta del modelo. Intenta más tarde.")
+        reply = completion.choices[0].message.content.strip()
+        print(f"[INFO] Respuesta del modelo: {reply}")
+        msg.body(reply)
 
     except Exception as e:
-        print(f"[ERROR] Ocurrió un error en la generación: {e}")
-        msg.body("Ocurrió un error al procesar tu mensaje. Intenta más tarde.")
+        print(f"[ERROR] Generación falla: {e}")
+        msg.body("Lo siento, hubo un problema generando la respuesta. Intenta más tarde.")
 
     return str(resp)
+
