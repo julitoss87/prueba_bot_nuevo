@@ -1,11 +1,11 @@
 import os
-import requests
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
+import requests
 
 app = Flask(__name__)
 
-# Cargar el token de OpenRouter
+# Verifica que la clave de OpenRouter exista
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 if not OPENROUTER_API_KEY:
     raise ValueError("Error: No se encontró la variable OPENROUTER_API_KEY")
@@ -17,32 +17,35 @@ def webhook():
     msg = resp.message()
 
     try:
-        # Prompt del sistema para dar contexto
-        system_prompt = (
-            "Eres un asistente profesional que responde en español, especializado en brindar información clara, útil y persuasiva "
-            "para personas interesadas en servicios de salud, medicina estética o cirugía plástica. Sé breve, cálido, y directo. "
-            "No inventes datos médicos. Si el mensaje no es claro, haz una pregunta breve para continuar la conversación."
+        # Prompt de sistema
+        system_prompt = {
+            "role": "system",
+            "content": (
+                "Eres un asistente profesional que responde en español, especializado en brindar información clara, útil y persuasiva "
+                "para personas interesadas en servicios de salud, medicina estética o cirugía plástica. Sé breve, cálido, y directo. "
+                "No inventes datos médicos. Si el mensaje no es claro, haz una pregunta breve para continuar la conversación."
+            )
+        }
+
+        # Mensaje del usuario
+        user_msg = {"role": "user", "content": incoming_msg}
+
+        # Solicitud al endpoint de OpenRouter
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "openchat/openchat-3.5-1210",
+                "messages": [system_prompt, user_msg],
+                "temperature": 0.7
+            }
         )
 
-        # Configurar headers y payload para OpenRouter
-        headers = {
-            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-            "HTTP-Referer": "https://tusitio.com",  # cambia esto por tu dominio o tu página
-            "X-Title": "Chatbot Salud",
-            "Content-Type": "application/json"
-        }
-
-        payload = {
-            "model": "openchat/openchat-3.5",  # Modelo gratuito
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": incoming_msg}
-            ]
-        }
-
-        # Llamada a la API de OpenRouter
-        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
-        response.raise_for_status()  # lanza excepción si hay error HTTP
+        if response.status_code != 200:
+            raise ValueError(f"Error {response.status_code}: {response.text}")
 
         respuesta = response.json()["choices"][0]["message"]["content"]
         msg.body(respuesta)
