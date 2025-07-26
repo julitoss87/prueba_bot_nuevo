@@ -38,7 +38,7 @@ def webhook():
                 "Content-Type": "application/json"
             },
             json={
-                "model": "mistralai/mistral-7b-instruct",
+                "model": "nousresearch/nous-capybara-7b",
                 "messages": [system_prompt, user_msg],
                 "temperature": 0.7
             }
