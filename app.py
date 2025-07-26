@@ -1,46 +1,39 @@
-from flask import Flask, request
-from twilio.twiml.messaging_response import MessagingResponse
-from huggingface_hub import InferenceClient
 import os
+from flask import Flask, request
+from huggingface_hub import InferenceClient
+from twilio.twiml.messaging_response import MessagingResponse
 
+# Configura tu modelo (liviano y gratuito)
+inference_client = InferenceClient(model="TinyLlama/TinyLlama-1.1B-Chat-v1.0")
+
+# Inicializa la app Flask
 app = Flask(__name__)
 
-# Inicializar cliente de Hugging Face con tu token
-HF_TOKEN = os.getenv("HF_API_KEY")  # Asegúrate de que esta variable esté en Render
-inference_client = InferenceClient(api_key=HF_TOKEN)
-
-# Modelo a usar
-MODEL_NAME = "m-a-p/SmolLM-3B-Instruct"
-
-def generar_respuesta_hf(mensaje):
+# Función para generar respuesta desde Hugging Face
+def generate_response_api(user_prompt: str):
     try:
-        messages = [{"role": "user", "content": mensaje}]
-        completion = inference_client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=messages,
-            max_tokens=200,
-            temperature=0.7,
-        )
+        messages = [{"role": "user", "content": user_prompt}]
+        completion = inference_client.chat.completions.create(messages=messages)
         return completion.choices[0].message.content
     except Exception as e:
         print(f"[ERROR] Falló la llamada a Hugging Face: {e}")
         return "Lo siento, hubo un error generando la respuesta."
 
+# Ruta del webhook de Twilio
 @app.route("/webhook", methods=["POST"])
-def webhook():
-    mensaje_usuario = request.form.get("Body")
-    print(f"[INFO] Mensaje recibido: {mensaje_usuario}")
-    
-    respuesta = generar_respuesta_hf(mensaje_usuario)
-    print(f"[INFO] Respuesta generada: {respuesta}")
-    
-    twilio_response = MessagingResponse()
-    twilio_response.message(respuesta)
-    return str(twilio_response)
+def whatsapp_webhook():
+    incoming_msg = request.form.get("Body", "").strip()
+    print(f"[INFO] Mensaje recibido: {incoming_msg}")
 
-@app.route("/")
-def home():
-    return "Webhook de WhatsApp con SmolLM-3B activo"
+    response_text = generate_response_api(incoming_msg)
+    print(f"[INFO] Respuesta generada: {response_text}")
 
-if __name__ == "__main__":
-    app.run(debug=True)
+    # Crea la respuesta TwiML para WhatsApp
+    resp = MessagingResponse()
+    resp.message(response_text)
+    return str(resp)
+
+# Ruta de test
+@app.route("/", methods=["GET"])
+def index():
+    return "🟢 WhatsApp AI Chatbot está activo."
