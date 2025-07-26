@@ -33,7 +33,7 @@ def webhook():
                 "X-Title": "Chatbot IA Clínica"
             },
             json={
-                "model": "openrouter/codellama-7b",  # modelo gratuito
+                "model": "qwen/qwen3-coder:free",  # modelo gratuito
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": incoming_msg}
