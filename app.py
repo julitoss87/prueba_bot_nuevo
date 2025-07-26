@@ -3,8 +3,14 @@ from flask import Flask, request
 from huggingface_hub import InferenceClient
 from twilio.twiml.messaging_response import MessagingResponse
 
-# Configura tu modelo (liviano y gratuito)
-inference_client = InferenceClient(model="TinyLlama/TinyLlama-1.1B-Chat-v1.0")
+# Agrega tu token aquí o usa una variable de entorno
+api_key = os.getenv("HF_TOKEN", "TU_TOKEN_AQUI")
+
+inference_client = InferenceClient(
+    model="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+    token=api_key
+)
+
 
 # Inicializa la app Flask
 app = Flask(__name__)
