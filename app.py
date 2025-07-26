@@ -20,7 +20,7 @@ def webhook():
 
     try:
         completion = client.chat.completions.create(
-            model="google/gemma-1.1-7b-it:free",  # usa aquí el modelo gratis que funcione
+            model="openchat/openchat-3.5-1210:free",  # ✅ modelo gratuito y funcional
             messages=[
                 {"role": "system", "content": "Eres un asistente útil y claro."},
                 {"role": "user", "content": incoming_msg}
