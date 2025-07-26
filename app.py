@@ -33,7 +33,7 @@ def webhook():
                 "X-Title": "Chatbot IA Clínica"
             },
             json={
-                "model": "qwen/qwen2.5-vl-32b-instruct:free",  # modelo gratuito
+                "model": "google/gemma-3-27b-it:free",  # modelo gratuito
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": incoming_msg}
