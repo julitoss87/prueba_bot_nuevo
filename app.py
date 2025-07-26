@@ -1,54 +1,51 @@
-import os
+from flask import Flask, request
+from twilio.twiml.messaging_response import MessagingResponse
 import requests
-from flask import Flask, request, jsonify
+import os
 
-# Obtener clave API de Groq
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")  # O escribe directamente: "sk-..."
-
-# Inicializar Flask
 app = Flask(__name__)
 
-# Función para generar respuesta usando Groq
-def generar_respuesta_groq(mensaje, modelo="mixtral-8x7b-32768"):
-    url = "https://api.groq.com/openai/v1/chat/completions"
+HF_TOKEN = os.getenv("HF_TOKEN")  # Debes configurar esto en Render
+
+def generar_respuesta_hf(mensaje, modelo="mistralai/Mistral-7B-Instruct-v0.2"):
+    url = f"https://api-inference.huggingface.co/models/{modelo}"
 
     headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Authorization": f"Bearer {HF_TOKEN}",
         "Content-Type": "application/json"
     }
 
-    data = {
-        "model": modelo,
-        "messages": [
-            {"role": "system", "content": "Eres un asistente útil y conversacional."},
-            {"role": "user", "content": mensaje}
-        ],
-        "temperature": 0.7
+    payload = {
+        "inputs": f"[INST] {mensaje} [/INST]"
     }
 
     try:
-        response = requests.post(url, headers=headers, json=data)
+        response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
-        respuesta = response.json()["choices"][0]["message"]["content"]
-        return respuesta
-    except requests.exceptions.HTTPError as http_err:
-        print("[ERROR] HTTP error:", http_err.response.status_code, http_err.response.text)
-        return "Lo siento, hubo un error HTTP generando la respuesta."
-    except Exception as e:
-        print("[ERROR] Otro error:", e)
+        data = response.json()
+
+        if isinstance(data, list) and "generated_text" in data[0]:
+            return data[0]["generated_text"]
+        else:
+            return "Lo siento, no pude generar una respuesta."
+    except requests.exceptions.RequestException as e:
+        print("[ERROR] Falló la llamada a Hugging Face:", e)
         return "Lo siento, hubo un error generando la respuesta."
 
-# Ruta raíz
-@app.route('/')
-def index():
-    return "¡Hola desde el chatbot con Groq!"
-
-# Webhook para Twilio
-@app.route('/webhook', methods=['POST'])
+@app.route("/webhook", methods=["POST"])
 def webhook():
-    data = request.form
-    mensaje = data.get("Body", "")
-    respuesta = generar_respuesta_groq(mensaje)
+    mensaje = request.form.get("Body")
+    numero = request.form.get("From")
+
     print("[INFO] Mensaje recibido:", mensaje)
+
+    respuesta = generar_respuesta_hf(mensaje)
+
     print("[INFO] Respuesta generada:", respuesta)
-    return jsonify({"respuesta": respuesta})
+
+    twilio_response = MessagingResponse()
+    twilio_response.message(respuesta)
+    return str(twilio_response)
+
+if __name__ == "__main__":
+    app.run(debug=True)
