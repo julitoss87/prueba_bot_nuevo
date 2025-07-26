@@ -8,7 +8,7 @@ app = Flask(__name__)
 HF_TOKEN = os.getenv("HF_TOKEN")  # Debes configurar esto en Render
 
 def generar_respuesta_hf(mensaje, modelo="mistralai/Mistral-7B-Instruct-v0.2"):
-    url = f"https://api-inference.huggingface.co/models/{modelo}"
+    url = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
 
     headers = {
         "Authorization": f"Bearer {HF_TOKEN}",
