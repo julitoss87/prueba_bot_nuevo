@@ -18,10 +18,11 @@ def webhook():
     msg = resp.message()
 
     try:
+        # Enviar mensaje a Qwen2.5 VL Instruct
         completion = client.chat.completions.create(
-            model="google/gemma-3-27b-it:free",
+            model="qwen/qwen2.5-vl-32b-instruct:free",
             messages=[
-                ChatCompletionMessageParam(role="system", content="Eres un asistente amable."),
+                ChatCompletionMessageParam(role="system", content="Eres un asistente útil y claro."),
                 ChatCompletionMessageParam(role="user", content=incoming_msg)
             ],
             extra_headers={
@@ -30,7 +31,7 @@ def webhook():
             }
         )
 
-        reply = completion.choices[0].message.content
+        reply = completion.choices[0].message.content.strip()
         msg.body(reply)
 
     except Exception as e:
