@@ -42,5 +42,6 @@ def webhook():
         print(f"[ERROR] Generación falla: {e}")
         msg.body("Lo siento, hubo un problema generando la respuesta. Intenta más tarde.")
 
+
     return str(resp)
 
