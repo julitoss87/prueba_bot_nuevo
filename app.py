@@ -38,7 +38,7 @@ def webhook():
                 "Content-Type": "application/json"
             },
             json={
-                "model": "openchat/openchat-3.5-1210",
+                "model": "mistralai/mistral-7b-instruct",
                 "messages": [system_prompt, user_msg],
                 "temperature": 0.7
             }
