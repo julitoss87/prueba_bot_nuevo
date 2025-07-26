@@ -20,7 +20,7 @@ def webhook():
 
     try:
         completion = client.chat.completions.create(
-            model="qwen/qwen2.5-vl-32b-instruct:free",
+            model="google/gemma-1.1-7b-it:free",  # usa aquí el modelo gratis que funcione
             messages=[
                 {"role": "system", "content": "Eres un asistente útil y claro."},
                 {"role": "user", "content": incoming_msg}
@@ -31,12 +31,19 @@ def webhook():
             }
         )
 
-        reply = completion.choices[0].message.content.strip()
-        print(f"[INFO] Respuesta del modelo: {reply}")
-        msg.body(reply)
+        if completion.choices:
+            content = completion.choices[0].message.content
+            print(f"[INFO] Respuesta cruda: {content}")
+            if content:
+                msg.body(content.strip())
+            else:
+                msg.body("No se generó respuesta. Intenta de nuevo.")
+        else:
+            print("[WARN] El modelo no devolvió ninguna elección.")
+            msg.body("No se recibió respuesta del modelo. Intenta más tarde.")
 
     except Exception as e:
         print(f"[ERROR] Ocurrió un error en la generación: {e}")
-        msg.body(f"Ocurrió un error: {e}")
+        msg.body("Ocurrió un error al procesar tu mensaje. Intenta más tarde.")
 
-    return str(resp)
+    return str(resp)       )
