@@ -20,13 +20,13 @@ def webhook():
 
     try:
         completion = client.chat.completions.create(
-            model="openchat/openchat-3.5-1210:free",  # ✅ modelo gratuito y funcional
+            model="nousresearch/nous-hermes-2-mistral:free",  # ✅ modelo válido
             messages=[
                 {"role": "system", "content": "Eres un asistente útil y claro."},
                 {"role": "user", "content": incoming_msg}
             ],
             extra_headers={
-                "HTTP-Referer": "https://tuapp.render.com",
+                "HTTP-Referer": "https://bot-whatsapp-gpt-nz35.onrender.com",
                 "X-Title": "BotWhatsAppIA"
             }
         )
