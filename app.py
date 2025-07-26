@@ -46,4 +46,4 @@ def webhook():
         print(f"[ERROR] Ocurrió un error en la generación: {e}")
         msg.body("Ocurrió un error al procesar tu mensaje. Intenta más tarde.")
 
-    return str(resp)       )
+    return str(resp)
