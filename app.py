@@ -1,16 +1,20 @@
-import requests
 import os
+import requests
+from flask import Flask, request, jsonify
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")  # o ponla directamente si estás local: "sk-..."
+# Obtener clave API de Groq
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")  # O escribe directamente: "sk-..."
 
+# Inicializar Flask
+app = Flask(__name__)
+
+# Función para generar respuesta usando Groq
 def generar_respuesta_groq(mensaje, modelo="mistral-7b-instruct"):
     url = "https://api.groq.com/openai/v1/chat/completions"
-    
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json"
     }
-
     data = {
         "model": modelo,
         "messages": [
@@ -28,3 +32,18 @@ def generar_respuesta_groq(mensaje, modelo="mistral-7b-instruct"):
     except requests.exceptions.RequestException as e:
         print("[ERROR] Falló la llamada a Groq:", e)
         return "Lo siento, hubo un error generando la respuesta."
+
+# Ruta raíz
+@app.route('/')
+def index():
+    return "¡Hola desde el chatbot con Groq!"
+
+# Webhook para Twilio
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    data = request.form
+    mensaje = data.get("Body", "")
+    respuesta = generar_respuesta_groq(mensaje)
+    print("[INFO] Mensaje recibido:", mensaje)
+    print("[INFO] Respuesta generada:", respuesta)
+    return jsonify({"respuesta": respuesta})
