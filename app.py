@@ -20,7 +20,7 @@ def webhook():
 
     try:
         completion = client.chat.completions.create(
-            model="openrouter/auto:free",
+            model="mistralai/mistral-7b-instruct:free",
             messages=[
                 {"role": "system", "content": "Eres un asistente en español, amable y persuasivo para ventas."},
                 {"role": "user", "content": incoming}
