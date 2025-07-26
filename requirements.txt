@@ -1,5 +1,4 @@
 flask
 requests
-replicate
 gunicorn
 twilio
