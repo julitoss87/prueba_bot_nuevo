@@ -13,20 +13,14 @@ inference_client = InferenceClient(token=HF_API_KEY)
 app = Flask(__name__)
 
 def generate_response(user_prompt: str, model: str = "TinyLlama/TinyLlama-1.1B-Chat-v1.0") -> str:
-    messages = [
-        {"role": "user", "content": user_prompt}
-    ]
-    
     try:
-        completion = inference_client.chat.completions.create(
+        completion = inference_client.text_generation(
+            prompt=user_prompt,
             model=model,
-            messages=messages
+            max_new_tokens=200,
+            temperature=0.7
         )
-        if completion and completion.choices and completion.choices[0].message:
-            return completion.choices[0].message.content
-        else:
-            return "Lo siento, el modelo no devolvió una respuesta válida."
-    
+        return completion
     except Exception as e:
         print(f"[ERROR] Falló la llamada a Hugging Face: {e}")
         return "Lo siento, hubo un error generando la respuesta."
