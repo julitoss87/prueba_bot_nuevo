@@ -1,4 +1,4 @@
 flask
-requests
+openai>=1.11.0
 gunicorn
 twilio
