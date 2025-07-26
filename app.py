@@ -6,6 +6,7 @@ from openai.types.chat import ChatCompletionMessageParam
 
 app = Flask(__name__)
 
+# Cliente OpenRouter
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=os.environ.get("OPENROUTER_API_KEY"),
@@ -14,11 +15,13 @@ client = OpenAI(
 @app.route("/webhook", methods=["POST"])
 def webhook():
     incoming_msg = request.values.get('Body', '')
+    print(f"[INFO] Mensaje recibido: {incoming_msg}")  # Verificación 1
+
     resp = MessagingResponse()
     msg = resp.message()
 
     try:
-        # Enviar mensaje a Qwen2.5 VL Instruct
+        # Llamada al modelo Qwen2.5 VL Instruct
         completion = client.chat.completions.create(
             model="qwen/qwen2.5-vl-32b-instruct:free",
             messages=[
@@ -32,9 +35,12 @@ def webhook():
         )
 
         reply = completion.choices[0].message.content.strip()
+        print(f"[INFO] Respuesta del modelo: {reply}")  # Verificación 2
+
         msg.body(reply)
 
     except Exception as e:
+        print(f"[ERROR] Ocurrió un error en la generación: {e}")  # Verificación 3
         msg.body(f"Ocurrió un error: {e}")
 
     return str(resp)
