@@ -3,43 +3,44 @@ from flask import Flask, request
 from huggingface_hub import InferenceClient
 from twilio.twiml.messaging_response import MessagingResponse
 
-# Agrega tu token aquí o usa una variable de entorno
-api_key = os.getenv("HF_TOKEN", "TU_TOKEN_AQUI")
+# Asegúrate de tener tu API key configurada como variable de entorno
+HF_API_KEY = os.getenv("HF_API_KEY")
 
-inference_client = InferenceClient(
-    model="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-    token=api_key
-)
+# Inicializa el cliente
+inference_client = InferenceClient(token=HF_API_KEY)
 
-
-# Inicializa la app Flask
-app = Flask(__name__)
-
-# Función para generar respuesta desde Hugging Face
-def generate_response_api(user_prompt: str):
+def generate_response(user_prompt: str, model: str = "TinyLlama/TinyLlama-1.1B-Chat-v1.0") -> str:
+    messages = [
+        {"role": "user", "content": user_prompt}
+    ]
+    
     try:
-        messages = [{"role": "user", "content": user_prompt}]
-        completion = inference_client.chat.completions.create(messages=messages)
-        return completion.choices[0].message.content
+        # Realiza la solicitud al modelo
+        completion = inference_client.chat.completions.create(
+            model=model,
+            messages=messages
+        )
+        
+        # Valida que se haya recibido una respuesta adecuada
+        if completion and completion.choices and completion.choices[0].message:
+            return completion.choices[0].message.content
+        else:
+            return "Lo siento, el modelo no devolvió una respuesta válida."
+    
     except Exception as e:
         print(f"[ERROR] Falló la llamada a Hugging Face: {e}")
         return "Lo siento, hubo un error generando la respuesta."
 
 # Ruta del webhook de Twilio
 @app.route("/webhook", methods=["POST"])
-def whatsapp_webhook():
-    incoming_msg = request.form.get("Body", "").strip()
+def webhook():
+    incoming_msg = request.values.get("Body", "").strip()
     print(f"[INFO] Mensaje recibido: {incoming_msg}")
 
-    response_text = generate_response_api(incoming_msg)
-    print(f"[INFO] Respuesta generada: {response_text}")
+    respuesta = generate_response(incoming_msg)
+    print(f"[INFO] Respuesta generada: {respuesta}")
 
-    # Crea la respuesta TwiML para WhatsApp
-    resp = MessagingResponse()
-    resp.message(response_text)
-    return str(resp)
-
-# Ruta de test
-@app.route("/", methods=["GET"])
-def index():
-    return "🟢 WhatsApp AI Chatbot está activo."
+    # Enviar la respuesta a WhatsApp
+    twilio_response = MessagingResponse()
+    twilio_response.message(respuesta)
+    return str(twilio_response)
